@@ -1,0 +1,7 @@
+Version 0.1.0
+- Implement CreatePayment
+- Implement ResolvePA
+- Implement SubmitTxn
+- Implement VerifySignature
+- Implement VerifySigner
+- Implement VerifyTrust
