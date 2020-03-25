@@ -1,3 +1,6 @@
+Version 0.1.2
+- Refactor resolver code to be more object orientated
+
 Version 0.1.1
 - Tidy up POM
 
