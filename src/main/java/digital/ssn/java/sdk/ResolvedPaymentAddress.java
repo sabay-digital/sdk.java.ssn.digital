@@ -44,6 +44,10 @@ public class ResolvedPaymentAddress {
 
         return gson.fromJson(paBody, ResolvedPaymentAddress.class);
     }
+
+    public String getPaymentInfo() {
+        return details.payment_info;
+    }
 }
 
 // ResolverResponseDetails describes the JSON structure for the nested details part of the response from the payment address resolver API
