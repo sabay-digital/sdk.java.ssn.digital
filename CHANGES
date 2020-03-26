@@ -1,3 +1,6 @@
+Version 0.2.0
+- Refactor all functions to be more object orientated
+
 Version 0.1.2
 - Refactor resolver code to be more object orientated
 
