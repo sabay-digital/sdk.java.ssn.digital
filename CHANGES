@@ -1,3 +1,6 @@
+Version 0.4.0
+- Implement getters for ResolvedPaymentAddress object
+
 Version 0.3.0
 - Implement payment signing
 - Fix bug in submit transaction

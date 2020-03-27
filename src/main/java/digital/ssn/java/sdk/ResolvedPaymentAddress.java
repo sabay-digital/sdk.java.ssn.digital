@@ -1,6 +1,7 @@
 package digital.ssn.java.sdk;
 
 import java.util.List;
+import java.util.HashMap;
 import java.io.IOException;
 import com.google.gson.*;
 import com.google.api.client.http.*;
@@ -47,6 +48,19 @@ public class ResolvedPaymentAddress {
 
     public String getPaymentInfo() {
         return details.payment_info;
+    }
+
+    public String getMemo() {
+        return details.memo;
+    }
+
+    public HashMap<String, String> getPaymentArray() {
+        HashMap<String, String> map = new HashMap<String, String>();
+
+        for (int i = 0; i < details.payment.size(); i++) {
+            map.put(details.payment.get(i).asset_code, details.payment.get(i).amount);
+        }
+        return map;
     }
 }
 
