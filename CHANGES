@@ -1,3 +1,7 @@
+Version 0.3.0
+- Implement payment signing
+- Fix bug in submit transaction
+
 Version 0.2.0
 - Refactor all functions to be more object orientated
 
