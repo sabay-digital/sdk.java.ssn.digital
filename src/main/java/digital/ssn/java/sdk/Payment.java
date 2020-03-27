@@ -4,6 +4,9 @@ import java.io.IOException;
 import com.google.gson.*;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import org.stellar.sdk.KeyPair;
+import org.stellar.sdk.Network;
+import org.stellar.sdk.Transaction;
 
 public class Payment {
     // Should implement a constructor here so you don't need to keep passing params
@@ -39,6 +42,18 @@ public class Payment {
         return resp.envelope_xdr;
     }
 
+    public static String Sign(String xdr, KeyPair signer, Network ssnNetwork) {
+        Transaction txn;
+        try {
+            txn = Transaction.fromEnvelopeXdr(xdr, ssnNetwork);
+            txn.sign(signer);
+            return txn.toEnvelopeXdrBase64();
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+        return "";
+    }
+
     // Submit takes a base64 encoded XDR envelope and submits it to the network via provided API
     public static String Submit(String xdr, String api) {
         // Load HTTP Client for requests
@@ -66,8 +81,8 @@ public class Payment {
             System.out.println(e);
         }
 
-        CreatePaymentResponse resp = gson.fromJson(stBody, CreatePaymentResponse.class);
-        return resp.envelope_xdr;
+        SubmitTransactionResponse resp = gson.fromJson(stBody, SubmitTransactionResponse.class);
+        return resp.hash;
     }
 }
 
@@ -109,7 +124,7 @@ class SubmitTransactionRequest {
 // SubmitTransactionResponse describes the JSON structure for the response from the submit transaction API
 class SubmitTransactionResponse {
     public String hash;
-    public int ldeger;
+    public int ledger;
     public String envelope_xdr;
     public String result_xdr;
     public String result_meta_xdr;
