@@ -16,12 +16,12 @@ public class Payment {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Payment.class);
 
-    // Create sends transaction information to the SSN API to build an XDR envelope
+    // Create sends transaction information to the SSN API to build an XDR envelope with timeOut 20s
     public static String Create(String from, String to, String amount, String assetCode, String assetIssuer, String memo, String api) throws IOException {
         return Create(from, to, amount, assetCode, assetIssuer, memo, api, 20000);
     }
 
-    // Create sends transaction information to the SSN API to build an XDR envelope
+    // Create sends transaction information to the SSN API to build an XDR envelope with dynamic timeOut
     public static String Create(String from, String to, String amount, String assetCode, String assetIssuer, String memo, String api, Integer timeOut) throws IOException {
         // Load HTTP Client for requests
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -32,7 +32,7 @@ public class Payment {
         // Prepare request
         GenericUrl cpReqURL = new GenericUrl(api+"/create/transaction");
         CreatePaymentRequest reqBody = new CreatePaymentRequest(from, to, amount, assetCode, assetIssuer, memo);
-        LOGGER.info("Create => Request body : {} ", gson.toJson(reqBody));
+        LOGGER.info("Create request body : {} ", gson.toJson(reqBody));
 
         // Make the request
         String cpBody = "";
@@ -44,12 +44,12 @@ public class Payment {
             HttpResponse cpResp = cpReq.execute();
             try {
                 cpBody = cpResp.parseAsString();
-                LOGGER.info("Create => Response body : {} ", cpResp);
+                LOGGER.info("Create response body : {} ", cpResp);
             } finally {
                 cpResp.disconnect();
             }
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
             throw e;
         }
 
@@ -57,16 +57,16 @@ public class Payment {
         return resp.envelope_xdr;
     }
 
-    public static String Sign(String xdr, KeyPair signer, Network ssnNetwork) {
+    public static String Sign(String xdr, KeyPair signer, Network ssnNetwork) throws IOException {
         Transaction txn;
         try {
             txn = Transaction.fromEnvelopeXdr(xdr, ssnNetwork);
             txn.sign(signer);
             return txn.toEnvelopeXdrBase64();
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
+            throw e;
         }
-        return "";
     }
 
     // Submit takes a base64 encoded XDR envelope and submits it to the network via provided API
@@ -85,7 +85,7 @@ public class Payment {
         // Prepare request
         GenericUrl stReqURL = new GenericUrl(api+"/transactions");
         SubmitTransactionRequest reqBody = new SubmitTransactionRequest(xdr);
-        System.out.println("Submit Request Body : {} " + gson.toJson(reqBody));
+        LOGGER.info("Submit request body : {} ", gson.toJson(reqBody));
 
         // Make the request
         String stBody = "";
@@ -97,12 +97,12 @@ public class Payment {
             HttpResponse stResp = stReq.execute();
             try {
                 stBody = stResp.parseAsString();
-                System.out.println("Submit Response Body : {} " + stBody);
+                LOGGER.info("Submit response body : {} ", stBody);
             } finally {
                 stResp.disconnect();
             }
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
             throw e;
         }
 

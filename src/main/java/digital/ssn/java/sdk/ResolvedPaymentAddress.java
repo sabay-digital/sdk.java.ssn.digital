@@ -18,14 +18,14 @@ public class ResolvedPaymentAddress {
     public int status;
     public String title;
 
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResolvedPaymentAddress.class);
 
-    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design
+    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design with timeOut 20s
     public static ResolvedPaymentAddress ResolvePA(String paymentAddress, String hash, String signature, String ssnAcc, String resolverURL) throws IOException {
         return ResolvePA(paymentAddress, hash, signature, ssnAcc, resolverURL, 20000);
     }
 
-    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design
+    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design with dynamic timeOut
     public static ResolvedPaymentAddress ResolvePA(String paymentAddress, String hash, String signature, String ssnAcc, String resolverURL, Integer timeOut) throws IOException {
         // Load HTTP Client for requests
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -36,7 +36,7 @@ public class ResolvedPaymentAddress {
         // Prepare request
         GenericUrl paReqURL = new GenericUrl(resolverURL+"/resolve/"+paymentAddress);
         ResolverRequest reqBody = new ResolverRequest(hash, signature, ssnAcc, ssnAcc);
-        System.out.println("ResolvePA Request Body : {} " + gson.toJson(reqBody));
+        LOGGER.info("ResolvePaymentAddress request body : {} ", gson.toJson(reqBody));
 
         // Make the request
         String paBody = "";
@@ -48,12 +48,12 @@ public class ResolvedPaymentAddress {
             HttpResponse paResp = paReq.execute();
             try {
                 paBody = paResp.parseAsString();
-                System.out.println("ResovlePA Response Body : {} " + paBody);
+                LOGGER.info("ResolvePaymentAddress response body : {} ", paBody);
             } finally {
                 paResp.disconnect();
             }
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
             throw e;
         }
 
