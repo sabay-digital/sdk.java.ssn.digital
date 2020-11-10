@@ -4,66 +4,93 @@ import java.io.IOException;
 import com.google.gson.*;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Signature {
-    // Verify checks whether the provided message, signature and public key are valid
-    public static boolean Verify(String message, String signature, String publicKey, String api) {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Signature.class);
+
+    // Verify checks whether the provided message, signature and public key are valid with timeOut 20s
+    public static boolean Verify(String message, String signature, String publicKey, String api) throws IOException {
+        return Verify(message, signature, publicKey, api, 20000);
+    }
+
+    // Verify checks whether the provided message, signature and public key are valid with dynamic timeOut
+    public static boolean Verify(String message, String signature, String publicKey, String api, Integer timeOut) throws IOException {
         // Load HTTP Client for requests
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
         // Gson parser
         Gson gson = new Gson();
+        boolean isVerify = false;
 
         // Prepare request
         GenericUrl vsReqURL = new GenericUrl(api+"/verify/signature");
         VerifySignatureRequest reqBody = new VerifySignatureRequest(message, signature, publicKey);
+        LOGGER.info("Verify request body : {} ", gson.toJson(reqBody));
 
         // Make the request
         try {
             HttpRequest vsReq = requestFactory.buildPostRequest(vsReqURL, ByteArrayContent.fromString(null,gson.toJson(reqBody)));
             vsReq.getHeaders().setContentType("application/json");
+            vsReq.setWriteTimeout(timeOut);
+            vsReq.setConnectTimeout(timeOut);
             HttpResponse vsResp = vsReq.execute();
             try {
                 if (vsResp.getStatusCode() == 200) {
-                    return true;
+                    isVerify = true;
                 }
             } finally {
                 vsResp.disconnect();
             }
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
+            throw e;
         }
-        return false;
+        LOGGER.info("Verify response body : {} ", isVerify);
+        return isVerify;
     }
 
-    // VerifySigner checks whether the provided signer is a signer on an SSN account
-    public static boolean VerifySigner(String signer, String ssnAccount, String api) {
+    // VerifySigner checks whether the provided signer is a signer on an SSN account with timeOut 20s
+    public static boolean VerifySigner(String signer, String ssnAccount, String api) throws IOException {
+        return VerifySigner(signer, ssnAccount, api, 20000);
+    }
+
+    // VerifySigner checks whether the provided signer is a signer on an SSN account with dynamic timeOut
+    public static boolean VerifySigner(String signer, String ssnAccount, String api, Integer timeOut) throws IOException {
         // Load HTTP Client for requests
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
         // Gson parser
         Gson gson = new Gson();
+        boolean isVerifySinger = false;
 
         // Prepare request
         GenericUrl vsReqURL = new GenericUrl(api+"/verify/signer");
         VerifySignerRequest reqBody = new VerifySignerRequest(signer, ssnAccount);
+        LOGGER.info("VerifySinger request body : {} ", gson.toJson(reqBody));
 
         // Make the request
         try {
             HttpRequest vsReq = requestFactory.buildPostRequest(vsReqURL, ByteArrayContent.fromString(null,gson.toJson(reqBody)));
             vsReq.getHeaders().setContentType("application/json");
+            vsReq.setWriteTimeout(timeOut);
+            vsReq.setConnectTimeout(timeOut);
             HttpResponse vsResp = vsReq.execute();
             try {
                 if (vsResp.getStatusCode() == 200) {
-                    return true;
+                    isVerifySinger = true;
                 }
             } finally {
                 vsResp.disconnect();
             }
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
+            throw e;
         }
-        return false;
+        LOGGER.info("VerifySinger response body : {} ", isVerifySinger);
+        return isVerifySinger;
     }
 }
 
