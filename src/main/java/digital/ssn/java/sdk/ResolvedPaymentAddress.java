@@ -6,6 +6,8 @@ import java.io.IOException;
 import com.google.gson.*;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResolvedPaymentAddress {
     // ResolvedPaymentAddress describes the JSON structure for the response from the payment address resolver API
@@ -16,8 +18,15 @@ public class ResolvedPaymentAddress {
     public int status;
     public String title;
 
-    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design
-    public static ResolvedPaymentAddress ResolvePA(String paymentAddress, String hash, String signature, String ssnAcc, String resolverURL) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResolvedPaymentAddress.class);
+
+    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design with timeOut 20s
+    public static ResolvedPaymentAddress ResolvePA(String paymentAddress, String hash, String signature, String ssnAcc, String resolverURL) throws IOException {
+        return ResolvePA(paymentAddress, hash, signature, ssnAcc, resolverURL, 20000);
+    }
+
+    // ResolvePA sends a payment address to the PA service for resolving. The resolverURL should be a resolver that supports the V2 design with dynamic timeOut
+    public static ResolvedPaymentAddress ResolvePA(String paymentAddress, String hash, String signature, String ssnAcc, String resolverURL, Integer timeOut) throws IOException {
         // Load HTTP Client for requests
         HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory();
@@ -27,20 +36,25 @@ public class ResolvedPaymentAddress {
         // Prepare request
         GenericUrl paReqURL = new GenericUrl(resolverURL+"/resolve/"+paymentAddress);
         ResolverRequest reqBody = new ResolverRequest(hash, signature, ssnAcc, ssnAcc);
+        LOGGER.info("ResolvePaymentAddress request body : {} ", gson.toJson(reqBody));
 
         // Make the request
         String paBody = "";
         try {
             HttpRequest paReq = requestFactory.buildPostRequest(paReqURL, ByteArrayContent.fromString(null,gson.toJson(reqBody)));
             paReq.getHeaders().setContentType("application/json");
+            paReq.setWriteTimeout(timeOut);
+            paReq.setConnectTimeout(timeOut);
             HttpResponse paResp = paReq.execute();
             try {
                 paBody = paResp.parseAsString();
+                LOGGER.info("ResolvePaymentAddress response body : {} ", paBody);
             } finally {
                 paResp.disconnect();
             }
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.error("Error : {} ", e);
+            throw e;
         }
 
         return gson.fromJson(paBody, ResolvedPaymentAddress.class);

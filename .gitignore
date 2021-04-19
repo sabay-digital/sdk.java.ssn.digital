@@ -1,0 +1,35 @@
+target/
+bin/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+**/target
+junk/
+target/
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+### eclipse ###
+**/target
+**/*.iml
+**/*.classpath
+**/*.project
+**/*.settings
+**/*..recommenders
