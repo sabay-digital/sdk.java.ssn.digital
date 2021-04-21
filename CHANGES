@@ -1,3 +1,10 @@
+Version 0.5.0
+- Bump dependencies
+- Update transaction signing code
+
+Version 0.4.1
+- Improve request timeout and error catching. Contribution from Seng Makara/True Money
+
 Version 0.4.0
 - Implement getters for ResolvedPaymentAddress object
 
